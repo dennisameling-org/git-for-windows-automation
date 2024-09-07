@@ -360,6 +360,10 @@ jobs:
           $currentPath = [System.Environment]::GetEnvironmentVariable("PATH", "Machine")
           $newPath = 'C:\Program Files\Git\bin;' + $currentPath
           [Environment]::SetEnvironmentVariable("PATH", $newPath, "Machine")
+      # Clone again because the original one was downloaded using a fallback method
+      # (since Git wasn't available yet)
+      - name: clone git-for-windows-automation again using Git
+        uses: actions/checkout@v4
       - name: Download pkg-${{env.ARCHITECTURE}}
         uses: actions/download-artifact@v4
         with:
