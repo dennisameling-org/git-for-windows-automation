@@ -58,7 +58,9 @@ jobs:
         run: |
           & ./azure-self-hosted-runners/post-deployment-script.ps1
           Add-Content $env:GITHUB_PATH "C:\Program Files\Git\bin"
-          Add-MachinePathItem "C:\Program Files\Git\bin"
+          $currentPath = [System.Environment]::GetEnvironmentVariable("PATH", "Machine")
+          $newPath = 'C:\Program Files\Git\bin;' + $currentPath
+          [Environment]::SetEnvironmentVariable("PATH", $newPath, "Machine")
       # Clone again because the original one was downloaded using a fallback method
       # (since Git wasn't available yet)
       - name: clone git-for-windows-automation again using Git
