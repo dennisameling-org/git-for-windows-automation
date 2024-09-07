@@ -74,8 +74,12 @@ jobs:
           }
 
           echo "Path is $PATH"
-          echo "Github path is $GITHUB_PATH"
-          echo "GitHub env is $GITHUB_ENV"
+          echo "GitHub path:"
+          cat $GITHUB_PATH
+          echo "GitHub env:"
+          cat $GITHUB_ENV
+
+          echo "C:/Program Files/Git/bin" >> $GITHUB_PATH
 
           test -z "$TAG_GIT_WORKFLOW_RUN_ID" ||
           die 'existing_git_tag cannot be used with tag_git_workflow_run_id!'
