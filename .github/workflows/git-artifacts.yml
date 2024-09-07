@@ -183,6 +183,7 @@ jobs:
         with:
           flavor: build-installers
           architecture: ${{env.architecture}}
+          verbose: true
       - name: Create artifact build matrix
         uses: actions/github-script@v7
         id: artifact-build-matrix
@@ -365,6 +366,7 @@ jobs:
         with:
           flavor: build-installers
           architecture: ${{env.ARCHITECTURE}}
+          verbose: true
       - name: Configure user
         run:
           USER_NAME="${{github.actor}}" &&
