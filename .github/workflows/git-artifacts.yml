@@ -53,6 +53,9 @@ jobs:
     steps:
       - name: clone git-for-windows-automation
         uses: actions/checkout@v4
+      - name: Install build dependencies
+        shell: powershell
+        run: ./azure-self-hosted-runners/post-deployment-script.ps1
       - name: Construct bundle-artifacts from existing tag
         if: env.EXISTING_GIT_TAG != ''
         run: |
@@ -364,8 +367,10 @@ jobs:
       sha256sum-nuget: ${{ steps.build.outputs.sha256sum-nuget }}
     steps:
       - name: clone git-for-windows-automation
-        if: needs.pkg.outputs.check-run-state != '' && always()
         uses: actions/checkout@v4
+      - name: Install build dependencies
+        shell: powershell
+        run: ./azure-self-hosted-runners/post-deployment-script.ps1
       - name: Download pkg-${{env.ARCHITECTURE}}
         uses: actions/download-artifact@v4
         with:
