@@ -58,6 +58,7 @@ jobs:
         run: |
           & ./azure-self-hosted-runners/post-deployment-script.ps1
           Add-Content $env:GITHUB_PATH "C:\Program Files\Git\bin"
+          Add-MachinePathItem "C:\Program Files\Git\bin"
       # Clone again because the original one was downloaded using a fallback method
       # (since Git wasn't available yet)
       - name: clone git-for-windows-automation again using Git
@@ -345,6 +346,7 @@ jobs:
         run: |
           & ./azure-self-hosted-runners/post-deployment-script.ps1
           Add-Content $env:GITHUB_PATH "C:\Program Files\Git\bin"
+          Add-MachinePathItem "C:\Program Files\Git\bin"
       - name: Download pkg-${{env.ARCHITECTURE}}
         uses: actions/download-artifact@v4
         with:
