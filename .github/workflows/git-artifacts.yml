@@ -486,8 +486,9 @@ jobs:
           conclusion: ${{ job.status }}
   sha256sums:
     runs-on: ubuntu-latest
-    run: 
-      shell: bash
+    defaults:
+      run:
+        shell: bash
     needs: ['pkg', 'artifacts']
     steps:
       - name: gather all SHA-256 checksums
