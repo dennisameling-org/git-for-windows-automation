@@ -346,7 +346,9 @@ jobs:
         run: |
           & ./azure-self-hosted-runners/post-deployment-script.ps1
           Add-Content $env:GITHUB_PATH "C:\Program Files\Git\bin"
-          Add-MachinePathItem "C:\Program Files\Git\bin"
+          $currentPath = [System.Environment]::GetEnvironmentVariable("PATH", "Machine")
+          $newPath = 'C:\Program Files\Git\bin;' + $currentPath
+          [Environment]::SetEnvironmentVariable("PATH", $newPath, "Machine")
       - name: Download pkg-${{env.ARCHITECTURE}}
         uses: actions/download-artifact@v4
         with:
