@@ -73,6 +73,10 @@ jobs:
             exit 1
           }
 
+          echo "Path is $PATH"
+          echo "Github path is $GITHUB_PATH"
+          echo "GitHub env is $GITHUB_ENV"
+
           test -z "$TAG_GIT_WORKFLOW_RUN_ID" ||
           die 'existing_git_tag cannot be used with tag_git_workflow_run_id!'
 
