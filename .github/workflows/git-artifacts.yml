@@ -58,6 +58,10 @@ jobs:
         run: |
           & ./azure-self-hosted-runners/post-deployment-script.ps1
           Add-Content $env:GITHUB_PATH "C:\Program Files\Git\bin"
+      # Clone again because the original one was downloaded using a fallback method
+      # (since Git wasn't available yet)
+      - name: clone git-for-windows-automation again using Git
+        uses: actions/checkout@v4
       - name: Construct bundle-artifacts from existing tag
         if: env.EXISTING_GIT_TAG != ''
         run: |
