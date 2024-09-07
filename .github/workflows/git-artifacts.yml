@@ -39,7 +39,7 @@ env:
 
 defaults:
   run:
-    shell: '"C:\Program Files\Git\bin\bash.exe"'
+    shell: 'C:\Program Files\Git\bin\bash.exe'
 
 jobs:
   pkg:
@@ -464,26 +464,6 @@ jobs:
         with:
           name: ${{matrix.artifact.name}}-${{env.ARCHITECTURE}}
           path: artifacts
-      - name: restore check-run state
-        if: needs.pkg.outputs.check-run-state != '' && always()
-        id: check-run-state
-        run: |
-          base64 -d <(echo "${{ needs.pkg.outputs.check-run-state }}") >"$RUNNER_TEMP/check-run.state"
-      - name: update check-run
-        if: needs.pkg.outputs.check-run-state != ''
-        uses: ./.github/actions/check-run-action
-        with:
-          app-id: ${{ secrets.GH_APP_ID }}
-          private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
-          append-text: 'Built ${{ matrix.artifact.name }}'
-      - name: update check-run if failed or canceled
-        if: needs.pkg.outputs.check-run-state != '' && (failure() || cancelled())
-        uses: ./.github/actions/check-run-action
-        with:
-          app-id: ${{ secrets.GH_APP_ID }}
-          private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
-          append-text: "${{ format('Completed: {0}', job.status) }}."
-          conclusion: ${{ job.status }}
   sha256sums:
     runs-on: ubuntu-latest
     defaults:
