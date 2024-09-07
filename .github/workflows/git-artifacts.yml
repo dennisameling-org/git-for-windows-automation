@@ -39,7 +39,7 @@ env:
 
 defaults:
   run:
-    shell: bash
+    shell: '"C:\Program Files\Git\bin\bash.exe"'
 
 jobs:
   pkg:
@@ -486,6 +486,8 @@ jobs:
           conclusion: ${{ job.status }}
   sha256sums:
     runs-on: ubuntu-latest
+    run: 
+      shell: bash
     needs: ['pkg', 'artifacts']
     steps:
       - name: gather all SHA-256 checksums
