@@ -12,3 +12,20 @@ jobs:
         with:
           flavor: build-installers
           architecture: aarch64
+      - name: install GfW
+        id: install-gfw
+        if: failure()
+        shell: powershell
+        run: |
+          & ./azure-self-hosted-runners/post-deployment-script.ps1
+          Add-Content $env:GITHUB_PATH "C:\Program Files\Git\bin"
+          $currentPath = [System.Environment]::GetEnvironmentVariable("PATH", "Machine")
+          $newPath = 'C:\Program Files\Git\bin;' + $currentPath
+          [Environment]::SetEnvironmentVariable("PATH", $newPath, "Machine")
+      - name: try installing the SDK again
+        if: failure()
+        needs: install-gfw
+        uses: dennisameling/setup-git-for-windows-sdk@e95ed5e0269958503b1ffbd56a5859c8f26d8a2b
+        with:
+          flavor: build-installers
+          architecture: aarch64
