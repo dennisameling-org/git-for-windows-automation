@@ -13,6 +13,7 @@ jobs:
         with:
           flavor: build-installers
           architecture: aarch64
+          cache: false
       - name: install GfW
         shell: powershell
         run: |
@@ -26,6 +27,7 @@ jobs:
         with:
           flavor: build-installers
           architecture: aarch64
+          cache: false
   should-work-on-hosted-runner:
     runs-on: windows-latest
     steps:
@@ -35,3 +37,4 @@ jobs:
         with:
           flavor: build-installers
           architecture: aarch64
+          cache: false
