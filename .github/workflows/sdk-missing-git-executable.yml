@@ -26,3 +26,12 @@ jobs:
         with:
           flavor: build-installers
           architecture: aarch64
+  should-work-on-hosted-runner:
+    runs-on: windows-latest
+    steps:
+      # This should work because the hosted runner has Git installed. Let's see what it logs as its PATH.
+      - uses: dennisameling/setup-git-for-windows-sdk@e95ed5e0269958503b1ffbd56a5859c8f26d8a2b
+        continue-on-error: true
+        with:
+          flavor: build-installers
+          architecture: aarch64
