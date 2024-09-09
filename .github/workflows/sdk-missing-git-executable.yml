@@ -8,7 +8,7 @@ jobs:
       - name: clone git-for-windows-automation
         uses: actions/checkout@v4
       # This will fail because Git isn't installed on the runner
-      - uses: dennisameling/setup-git-for-windows-sdk@595e4089435f600d796caba79869e864be4aeece
+      - uses: dennisameling/setup-git-for-windows-sdk@7a5f949160ff49a1c979358f325e8706ecd52955
         continue-on-error: true
         with:
           flavor: build-installers
@@ -23,7 +23,7 @@ jobs:
           $newPath = 'C:\Program Files\Git\bin;' + $currentPath
           [Environment]::SetEnvironmentVariable("PATH", $newPath, "Machine")
       - name: try installing the SDK again
-        uses: dennisameling/setup-git-for-windows-sdk@595e4089435f600d796caba79869e864be4aeece
+        uses: dennisameling/setup-git-for-windows-sdk@7a5f949160ff49a1c979358f325e8706ecd52955
         with:
           flavor: build-installers
           architecture: aarch64
@@ -32,7 +32,7 @@ jobs:
     runs-on: windows-latest
     steps:
       # This should work because the hosted runner has Git installed. Let's see what it logs as its PATH.
-      - uses: dennisameling/setup-git-for-windows-sdk@595e4089435f600d796caba79869e864be4aeece
+      - uses: dennisameling/setup-git-for-windows-sdk@7a5f949160ff49a1c979358f325e8706ecd52955
         continue-on-error: true
         with:
           flavor: build-installers
