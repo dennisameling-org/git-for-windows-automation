@@ -1,0 +1,14 @@
+on: push
+
+jobs:
+  missing-git-executable:
+    runs-on: dennis-windows-arm64
+    steps:
+      # This will use the GitHub API since Git isn't installed on the runner
+      - name: clone git-for-windows-automation
+        uses: actions/checkout@v4
+      # This will fail because Git isn't installed on the runner
+      - uses: dennisameling/setup-git-for-windows-sdk@e95ed5e0269958503b1ffbd56a5859c8f26d8a2b
+        with:
+          flavor: build-installers
+          architecture: aarch64
