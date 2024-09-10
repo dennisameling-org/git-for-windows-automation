@@ -43,7 +43,7 @@ defaults:
 
 jobs:
   pkg:
-    runs-on: ${{ github.event.inputs.architecture == 'aarch64' && fromJSON('["Windows", "ARM64"]') || 'windows-latest' }}
+    runs-on: ${{ github.event.inputs.architecture == 'aarch64' && 'dennis-windows-arm64' || 'windows-latest' }}
     outputs:
       artifact_matrix: ${{steps.artifact-build-matrix.outputs.matrix}}
       msystem: ${{steps.configure-environment.outputs.MSYSTEM}}
@@ -52,6 +52,18 @@ jobs:
       check-run-state: ${{steps.check-run-state.outputs.check-run-state}}
     steps:
       - name: clone git-for-windows-automation
+        uses: actions/checkout@v4
+      - name: Install build dependencies
+        shell: powershell
+        run: |
+          & ./azure-self-hosted-runners/post-deployment-script.ps1
+          Add-Content $env:GITHUB_PATH "C:\Program Files\Git\bin"
+          $currentPath = [System.Environment]::GetEnvironmentVariable("PATH", "Machine")
+          $newPath = 'C:\Program Files\Git\bin;' + $currentPath
+          [Environment]::SetEnvironmentVariable("PATH", $newPath, "Machine")
+      # Clone again because the original one was downloaded using a fallback method
+      # (since Git wasn't available yet)
+      - name: clone git-for-windows-automation again using Git
         uses: actions/checkout@v4
       - name: Construct bundle-artifacts from existing tag
         if: env.EXISTING_GIT_TAG != ''
@@ -115,19 +127,6 @@ jobs:
           unzip bundle-artifacts.zip -d bundle-artifacts
           echo "GIT_VERSION=$(cat bundle-artifacts/next_version)" >> $GITHUB_ENV
           echo "GIT_REV=$(cat bundle-artifacts/git-commit-oid)" >>$GITHUB_ENV
-      - name: Mirror Check Run to ${{ env.OWNER }}/${{ env.REPO }}
-        uses: ./.github/actions/check-run-action
-        with:
-          app-id: ${{ secrets.GH_APP_ID }}
-          private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
-          owner: ${{ env.OWNER }}
-          repo: ${{ env.REPO }}
-          rev: ${{ env.GIT_REV }}
-          check-run-name: "git-artifacts-${{ env.ARCHITECTURE }}"
-          title: "Build Git ${{ env.GIT_VERSION }} artifacts"
-          summary: "Build Git ${{ env.GIT_VERSION }} artifacts from commit ${{ env.GIT_REV }}${{ env.TAG_GIT_WORKFLOW_RUN_ID && format(' (tag-git run #{0})', env.TAG_GIT_WORKFLOW_RUN_ID) || '' }}"
-          text: "For details, see [this run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id}})."
-          details-url: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id}}"
       - name: Re-publish bundle-artifacts so the next job can easily use it
         uses: actions/upload-artifact@v4
         with:
@@ -270,13 +269,6 @@ jobs:
           git config --global user.email "<${info#*<}"
         env:
           GPGKEY: ${{secrets.GPGKEY}}
-      - name: update check-run
-        if: steps.restore-cached-git-pkg.outputs.cache-hit != 'true'
-        uses: ./.github/actions/check-run-action
-        with:
-          app-id: ${{ secrets.GH_APP_ID }}
-          private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
-          append-text: 'About to build the `${{env.MINGW_PACKAGE_PREFIX}}-git` package'
       - name: Build ${{env.MINGW_PACKAGE_PREFIX}}-git
         timeout-minutes: 60
         if: steps.restore-cached-git-pkg.outputs.cache-hit != 'true'
@@ -322,12 +314,6 @@ jobs:
         with:
           path: artifacts
           key: pkg-${{env.GIT_VERSION}}-${{env.ARCHITECTURE}}-${{env.TAG_GIT_WORKFLOW_RUN_ID}}
-      - name: update check-run
-        uses: ./.github/actions/check-run-action
-        with:
-          app-id: ${{ secrets.GH_APP_ID }}
-          private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
-          append-text: 'The `${{env.MINGW_PACKAGE_PREFIX}}-git` package was built successfully'
       - name: Publish ${{env.MINGW_PACKAGE_PREFIX}}-git
         uses: actions/upload-artifact@v4
         with:
@@ -337,16 +323,8 @@ jobs:
         id: check-run-state
         run: |
           echo "check-run-state=$(base64 -w 0 <"$RUNNER_TEMP/check-run.state")" >>$GITHUB_OUTPUT
-      - name: update check-run if failed or canceled
-        if: failure() || cancelled()
-        uses: ./.github/actions/check-run-action
-        with:
-          app-id: ${{ secrets.GH_APP_ID }}
-          private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
-          append-text: "${{ format('Completed: {0}', job.status) }}."
-          conclusion: ${{ job.status }}
   artifacts:
-    runs-on: ${{ github.event.inputs.architecture == 'aarch64' && fromJSON('["Windows", "ARM64"]') || 'windows-latest' }}
+    runs-on: ${{ github.event.inputs.architecture == 'aarch64' && 'dennis-windows-arm64' || 'windows-latest' }}
     needs: pkg
     env:
       MSYSTEM: ${{ needs.pkg.outputs.msystem }}
@@ -364,7 +342,18 @@ jobs:
       sha256sum-nuget: ${{ steps.build.outputs.sha256sum-nuget }}
     steps:
       - name: clone git-for-windows-automation
-        if: needs.pkg.outputs.check-run-state != '' && always()
+        uses: actions/checkout@v4
+      - name: Install build dependencies
+        shell: powershell
+        run: |
+          & ./azure-self-hosted-runners/post-deployment-script.ps1
+          Add-Content $env:GITHUB_PATH "C:\Program Files\Git\bin"
+          $currentPath = [System.Environment]::GetEnvironmentVariable("PATH", "Machine")
+          $newPath = 'C:\Program Files\Git\bin;' + $currentPath
+          [Environment]::SetEnvironmentVariable("PATH", $newPath, "Machine")
+      # Clone again because the original one was downloaded using a fallback method
+      # (since Git wasn't available yet)
+      - name: clone git-for-windows-automation again using Git
         uses: actions/checkout@v4
       - name: Download pkg-${{env.ARCHITECTURE}}
         uses: actions/download-artifact@v4
@@ -459,28 +448,11 @@ jobs:
         with:
           name: ${{matrix.artifact.name}}-${{env.ARCHITECTURE}}
           path: artifacts
-      - name: restore check-run state
-        if: needs.pkg.outputs.check-run-state != '' && always()
-        id: check-run-state
-        run: |
-          base64 -d <(echo "${{ needs.pkg.outputs.check-run-state }}") >"$RUNNER_TEMP/check-run.state"
-      - name: update check-run
-        if: needs.pkg.outputs.check-run-state != ''
-        uses: ./.github/actions/check-run-action
-        with:
-          app-id: ${{ secrets.GH_APP_ID }}
-          private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
-          append-text: 'Built ${{ matrix.artifact.name }}'
-      - name: update check-run if failed or canceled
-        if: needs.pkg.outputs.check-run-state != '' && (failure() || cancelled())
-        uses: ./.github/actions/check-run-action
-        with:
-          app-id: ${{ secrets.GH_APP_ID }}
-          private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
-          append-text: "${{ format('Completed: {0}', job.status) }}."
-          conclusion: ${{ job.status }}
   sha256sums:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
     needs: ['pkg', 'artifacts']
     steps:
       - name: gather all SHA-256 checksums
@@ -505,11 +477,3 @@ jobs:
         id: check-run-state
         run: |
           base64 -d <(echo "${{ needs.pkg.outputs.check-run-state }}") >"$RUNNER_TEMP/check-run.state"
-      - name: update check-run
-        if: needs.pkg.outputs.check-run-state != '' && always()
-        uses: ./.github/actions/check-run-action
-        with:
-          app-id: ${{ secrets.GH_APP_ID }}
-          private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
-          append-text: "${{ job.status == 'success' && 'Done!' || format('Completed: {0}', job.status) }}."
-          conclusion: ${{ job.status }}
