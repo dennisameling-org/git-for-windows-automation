@@ -1,6 +1,17 @@
 on: push
 
 jobs:
+  externals-dir:
+    runs-on: dennis-windows-arm64
+    steps:
+      - name: list env variables and externals
+        run: |
+          Get-ChildItem -Path Env:
+          Write-Host "Workspace path: $env:GITHUB_WORKSPACE"
+          Write-Host "Temp path: $env:RUNNER_TEMP"
+          Write-Host "Tool cache path: $env:RUNNER_TOOL_CACHE"
+          Get-ChildItem -Path C:\a\externals -Recurse | Select-String -Pattern 'git'
+          Get-ChildItem -Path C:\a\externals -Recurse
   missing-git-executable:
     runs-on: dennis-windows-arm64
     steps:
