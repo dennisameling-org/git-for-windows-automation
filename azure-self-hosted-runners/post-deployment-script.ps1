@@ -135,14 +135,6 @@ Write-Output "Enabling Windows Developer Mode..."
 Start-Process -Wait "reg" 'add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock" /t REG_DWORD /f /v "AllowDevelopmentWithoutDevLicense" /d "1"'
 Write-Output "Enabled Windows developer mode."
 
-# =============================
-# MICROSOFT DEFENDER EXCLUSIONS
-# =============================
-
-Write-Output "Adding Microsoft Defender Exclusions..."
-Add-MpPreference -ExclusionPath "C:\"
-Write-Output "Finished adding Microsoft Defender Exclusions."
-
 # ======================
 # GIT FOR WINDOWS
 # ======================
