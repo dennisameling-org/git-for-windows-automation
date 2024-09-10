@@ -73,14 +73,6 @@ jobs:
             exit 1
           }
 
-          echo "Path is $PATH"
-          echo "GitHub path:"
-          cat $GITHUB_PATH
-          echo "GitHub env:"
-          cat $GITHUB_ENV
-
-          echo "C:/Program Files/Git/bin" >> $GITHUB_PATH
-
           test -z "$TAG_GIT_WORKFLOW_RUN_ID" ||
           die 'existing_git_tag cannot be used with tag_git_workflow_run_id!'
 
@@ -187,11 +179,10 @@ jobs:
           git config --global user.name "$USER_NAME" &&
           git config --global user.email "$USER_EMAIL" &&
           echo "PACKAGER=$USER_NAME <$USER_EMAIL>" >> $GITHUB_ENV
-      - uses: dennisameling/setup-git-for-windows-sdk@4f1322161cd517bd22d93f4938712908dc3dc7ac
+      - uses: git-for-windows/setup-git-for-windows-sdk@v1
         with:
           flavor: build-installers
           architecture: ${{env.architecture}}
-          verbose: true
       - name: Create artifact build matrix
         uses: actions/github-script@v7
         id: artifact-build-matrix
@@ -374,11 +365,10 @@ jobs:
         with:
           name: bundle-artifacts
           path: bundle-artifacts
-      - uses: dennisameling/setup-git-for-windows-sdk@4f1322161cd517bd22d93f4938712908dc3dc7ac
+      - uses: git-for-windows/setup-git-for-windows-sdk@v1
         with:
           flavor: build-installers
           architecture: ${{env.ARCHITECTURE}}
-          verbose: true
       - name: Configure user
         run:
           USER_NAME="${{github.actor}}" &&
